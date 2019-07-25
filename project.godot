@@ -19,6 +19,10 @@ config/name="GD_Test"
 run/main_scene="res://Sample.tscn"
 config/icon="res://icon.png"
 
+[editor_plugins]
+
+enabled=PoolStringArray(  )
+
 [rendering]
 
 environment/default_environment="res://default_env.tres"
