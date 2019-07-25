@@ -1,6 +1,6 @@
 extends KinematicBody2D
 
-const GRAVITY = 200.0
+const GRAVITY = 600
 const WALK_ACCEL = 2000
 const JUMP_VELOCITY = -200
 const FRICTION = 10000
@@ -20,7 +20,7 @@ var state_ = State.IDLE
 
 
 func _physics_process(delta):
-	print(state_)
+	print(State.keys()[state_])
 	match [state_]:
 		[State.IDLE]:
 			if (velocity.x > 0):
@@ -35,7 +35,6 @@ func _physics_process(delta):
 			elif (not is_on_floor()):
 				state_ = State.FALLING
 		[State.WALKING]:
-			print(velocity.x)
 			if (Input.is_action_pressed("ui_left")):
 				velocity.x = min(velocity.x, -WALK_INITIAL_VELOCITY)
 				velocity.x = max(velocity.x + delta * -WALK_ACCEL, -WALK_MAX_VELOCITY)
