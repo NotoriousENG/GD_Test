@@ -1,8 +1,11 @@
 extends KinematicBody2D
 
 const GRAVITY = 200.0
-const WALK_SPEED = 200
-const JUMP_FORCE = 400
+const WALK_ACCEL = 2000
+const JUMP_VELOCITY = 20
+const FRICTION = 10000
+const WALK_INITIAL_VELOCITY = 80
+const WALK_MAX_VELOCITY = 500
 
 var velocity = Vector2()
 
@@ -19,6 +22,11 @@ var state_ = State.IDLE
 func _physics_process(delta):
 	match [state_]:
 		[State.IDLE]:
+			if (velocity.x > 0):
+				velocity.x = max(0, velocity.x - delta * FRICTION)
+			elif (velocity.x < 0):
+				velocity.x = min(0, velocity.x + delta * FRICTION)
+			
 			if (Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right")):
 				state_ = State.WALKING
 			elif (Input.is_action_pressed("ui_up")):
@@ -26,25 +34,28 @@ func _physics_process(delta):
 			elif (not is_on_floor()):
 				state_ = State.FALLING
 		[State.WALKING]:
-			if (not is_on_floor()):
-				state_ = State.FALLING
-			elif (Input.is_action_pressed("ui_left")):
-				velocity.x += -WALK_SPEED
+			print(velocity.x)
+			if (Input.is_action_pressed("ui_left")):
+				velocity.x = min(velocity.x, -WALK_INITIAL_VELOCITY)
+				velocity.x = max(velocity.x + delta * -WALK_ACCEL, -WALK_MAX_VELOCITY)
 			elif (Input.is_action_pressed("ui_right")):
-				velocity.x += WALK_SPEED
+				velocity.x = max(velocity.x, WALK_INITIAL_VELOCITY)
+				velocity.x = min(velocity.x + delta * WALK_ACCEL, WALK_MAX_VELOCITY)
 			elif (Input.is_action_pressed("ui_up")):
 				state_ = State.JUMPING
 			else:
 				state_ = State.IDLE
 		[State.JUMPING]:
-			velocity.y += JUMP_FORCE
+			velocity.y = JUMP_VELOCITY
 			state_ = State.FALLING
 		[State.FALLING]:
 			velocity.y += delta * GRAVITY
 			if (Input.is_action_pressed("ui_left")):
-				velocity.x += -WALK_SPEED
+				velocity.x = min(velocity.x, -WALK_INITIAL_VELOCITY)
+				velocity.x = max(velocity.x + delta * -WALK_ACCEL, -WALK_MAX_VELOCITY)
 			elif (Input.is_action_pressed("ui_right")):
-				velocity.x += WALK_SPEED
+				velocity.x = max(velocity.x, WALK_INITIAL_VELOCITY)
+				velocity.x = min(velocity.x + delta * WALK_ACCEL, WALK_MAX_VELOCITY)
 			if (is_on_floor()):
 				velocity.y = 0
 				state_ = State.IDLE
