@@ -19,3 +19,5 @@ shape = SubResource( 1 )
 
 [node name="Camera2D" type="Camera2D" parent="KinematicBody2D"]
 current = true
+
+[node name="Camera2D" type="Camera2D" parent="."]

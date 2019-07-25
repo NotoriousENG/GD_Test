@@ -16,7 +16,7 @@ _global_script_class_icons={
 [application]
 
 config/name="GD_Test"
-run/main_scene="res://Char.tscn"
+run/main_scene="res://Sample.tscn"
 config/icon="res://icon.png"
 
 [rendering]

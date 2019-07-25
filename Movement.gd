@@ -7,8 +7,8 @@ var velocity = Vector2()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
-	velocity.y += delta * GRAVITY
-	
+	if not is_on_floor():
+		velocity.y += delta * GRAVITY
 	if Input.is_action_pressed("ui_left"):
 		velocity.x = -WALK_SPEED
 	elif Input.is_action_pressed("ui_right"):
