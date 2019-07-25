@@ -16,8 +16,8 @@ _global_script_class_icons={
 [application]
 
 config/name="GD_Test"
-run/main_scene="res://Sample.tscn"
-config/icon="res://icon.png"
+run/main_scene="res://Scenes/Sample.tscn"
+config/icon="res://Sprites/icon.png"
 
 [editor_plugins]
 
