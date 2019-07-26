@@ -6,12 +6,9 @@ const JUMP_VELOCITY = -600
 const FRICTION = 10000
 const WALK_INITIAL_VELOCITY = 80
 const WALK_MAX_VELOCITY = 500
-
 const fallMultiplier = 2
-const lowJumpMultiplier = 10
 
 var velocity = Vector2()
-var time = Timer.new()
 
 enum State{
 	IDLE,
@@ -22,15 +19,25 @@ enum State{
 
 var state_ = State.IDLE
 
+func Get_Left_Right_Movement(delta):
+	if (Input.is_action_pressed("ui_left")):
+		velocity.x = min(velocity.x, -WALK_INITIAL_VELOCITY)
+		velocity.x = max(velocity.x + delta * -WALK_ACCEL, -WALK_MAX_VELOCITY)
+	elif (Input.is_action_pressed("ui_right")):
+		velocity.x = max(velocity.x, WALK_INITIAL_VELOCITY)
+		velocity.x = min(velocity.x + delta * WALK_ACCEL, WALK_MAX_VELOCITY)
+
+func Use_Friction(delta, fraction):
+	if (velocity.x > 0):
+			velocity.x = max(0, velocity.x - delta * fraction * FRICTION)
+	elif (velocity.x < 0):
+		velocity.x = min(0, velocity.x + delta * fraction * FRICTION)
+
 func _physics_process(delta):
 	print(State.keys()[state_])
 	match [state_]:
 		[State.IDLE]:
-			if (velocity.x > 0):
-				velocity.x = max(0, velocity.x - delta * FRICTION)
-			elif (velocity.x < 0):
-				velocity.x = min(0, velocity.x + delta * FRICTION)
-				
+			Use_Friction(delta, 1)
 			if (Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right")):
 				state_ = State.WALKING
 			elif (Input.is_action_pressed("ui_up")):
@@ -40,33 +47,20 @@ func _physics_process(delta):
 		[State.WALKING]:
 			if (Input.is_action_pressed("ui_up")):
 				state_ = State.JUMPING
-			if (Input.is_action_pressed("ui_left")):
-				velocity.x = min(velocity.x, -WALK_INITIAL_VELOCITY)
-				velocity.x = max(velocity.x + delta * -WALK_ACCEL, -WALK_MAX_VELOCITY)
-			elif (Input.is_action_pressed("ui_right")):
-				velocity.x = max(velocity.x, WALK_INITIAL_VELOCITY)
-				velocity.x = min(velocity.x + delta * WALK_ACCEL, WALK_MAX_VELOCITY)
+			if (Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right")):
+				Get_Left_Right_Movement(delta)
 			else:
 				state_ = State.IDLE
 		[State.JUMPING]:
 			velocity.y = JUMP_VELOCITY
 			state_ = State.FALLING
 		[State.FALLING]:
-			if (velocity.x > 0):
-				velocity.x = max(0, velocity.x - delta * FRICTION/10)
-			elif (velocity.x < 0):
-				velocity.x = min(0, velocity.x + delta * FRICTION/10)
-				
+			Use_Friction(delta, 0.1)
 			if velocity.y > 0:
 				velocity.y += 9.81 * fallMultiplier # fall faster than jump
 			else:
 				velocity.y += delta * GRAVITY
-			if (Input.is_action_pressed("ui_left")):
-				velocity.x = min(velocity.x, -WALK_INITIAL_VELOCITY)
-				velocity.x = max(velocity.x + delta * -WALK_ACCEL, -WALK_MAX_VELOCITY)
-			elif (Input.is_action_pressed("ui_right")):
-				velocity.x = max(velocity.x, WALK_INITIAL_VELOCITY)
-				velocity.x = min(velocity.x + delta * WALK_ACCEL, WALK_MAX_VELOCITY)
+			Get_Left_Right_Movement(delta)
 			if (is_on_floor() and velocity.y > 0 ):
 				velocity.y = 0
 				state_ = State.IDLE
