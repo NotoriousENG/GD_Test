@@ -1,13 +1,17 @@
 extends KinematicBody2D
 
-const GRAVITY = 600
+const GRAVITY = 1200
 const WALK_ACCEL = 2000
-const JUMP_VELOCITY = -200
+const JUMP_VELOCITY = -600
 const FRICTION = 10000
 const WALK_INITIAL_VELOCITY = 80
 const WALK_MAX_VELOCITY = 500
 
+const fallMultiplier = 2
+const lowJumpMultiplier = 10
+
 var velocity = Vector2()
+var time = Timer.new()
 
 enum State{
 	IDLE,
@@ -18,7 +22,6 @@ enum State{
 
 var state_ = State.IDLE
 
-
 func _physics_process(delta):
 	print(State.keys()[state_])
 	match [state_]:
@@ -27,7 +30,7 @@ func _physics_process(delta):
 				velocity.x = max(0, velocity.x - delta * FRICTION)
 			elif (velocity.x < 0):
 				velocity.x = min(0, velocity.x + delta * FRICTION)
-			
+				
 			if (Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right")):
 				state_ = State.WALKING
 			elif (Input.is_action_pressed("ui_up")):
@@ -35,26 +38,29 @@ func _physics_process(delta):
 			elif (not is_on_floor()):
 				state_ = State.FALLING
 		[State.WALKING]:
+			if (Input.is_action_pressed("ui_up")):
+				state_ = State.JUMPING
 			if (Input.is_action_pressed("ui_left")):
 				velocity.x = min(velocity.x, -WALK_INITIAL_VELOCITY)
 				velocity.x = max(velocity.x + delta * -WALK_ACCEL, -WALK_MAX_VELOCITY)
 			elif (Input.is_action_pressed("ui_right")):
 				velocity.x = max(velocity.x, WALK_INITIAL_VELOCITY)
 				velocity.x = min(velocity.x + delta * WALK_ACCEL, WALK_MAX_VELOCITY)
-			elif (Input.is_action_pressed("ui_up")):
-				state_ = State.JUMPING
 			else:
 				state_ = State.IDLE
 		[State.JUMPING]:
 			velocity.y = JUMP_VELOCITY
 			state_ = State.FALLING
 		[State.FALLING]:
-			velocity.y += delta * GRAVITY
 			if (velocity.x > 0):
-				velocity.x = max(0, velocity.x - delta * FRICTION/5)
+				velocity.x = max(0, velocity.x - delta * FRICTION/10)
 			elif (velocity.x < 0):
-				velocity.x = min(0, velocity.x + delta * FRICTION/5)
+				velocity.x = min(0, velocity.x + delta * FRICTION/10)
 				
+			if velocity.y > 0:
+				velocity.y += 9.81 * fallMultiplier # fall faster than jump
+			else:
+				velocity.y += delta * GRAVITY
 			if (Input.is_action_pressed("ui_left")):
 				velocity.x = min(velocity.x, -WALK_INITIAL_VELOCITY)
 				velocity.x = max(velocity.x + delta * -WALK_ACCEL, -WALK_MAX_VELOCITY)
